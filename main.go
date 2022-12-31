@@ -26,7 +26,7 @@ const timeformat = "15:04"
 // Use `timedatectl` or `cat /etc/timezone` on your own machine
 // to get it.
 const mytz = "Local"
-// Generated refresh time (in seconds)
+// Generated page refresh time (in seconds)
 const refreshtime int = 10 * 60
 
 // configuration is ending here
