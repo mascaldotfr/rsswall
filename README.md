@@ -24,9 +24,9 @@ naivety fixes are welcome though.
 - No javascript or images, just text. But it has light/dark themes out of the
   box, and the page refreshes itself every 10 minutes.
 - Can display only `x` items, per feed, if needed
-- One shot program, no service to deal with. All resources (templates, favicon
-  etc.) are self contained in the generated binary, excepted the feedlist,
-  no dependency hell.
+- One shot program, no service or database to deal with. All resources
+  (templates, favicon etc.) are self contained in the generated binary,
+  excepted the feedlist, no dependency hell.
 
 ## Quickstart and usage 
 
