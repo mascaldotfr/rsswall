@@ -1,6 +1,6 @@
 all: rsswall
 
-rsswall: *.go go.mod
+rsswall: *.go go.mod views/*
 	go build -o rsswall
 
 clean:
