@@ -21,7 +21,8 @@ naivety fixes are welcome though.
   that CSS flex is supported, may it be a small smartphone or a 4K screen. It does
   also work on a text-based browser, in a more linear way indeed.
 - Single HTML file output.
-- No javascript or images, just text. But it has light/dark themes out of the box.
+- No javascript or images, just text. But it has light/dark themes out of the
+  box, and the page refreshes itself every 10 minutes.
 - Can display only `x` items, per feed, if needed
 - One shot program, no service to deal with. All resources (templates, favicon
   etc.) are self contained in the generated binary, excepted the feedlist,
