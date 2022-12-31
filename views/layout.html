@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html> 
+        <head>
+		<title>RSS Wall</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+		<meta http-equiv="refresh" content="{{.RefreshTime}}">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="data:image/x-icon;base64,{{.Favicon}}" rel="icon" type="image/x-icon">
+		<style>
+
+			html {
+				--bg: #244982;
+				--bg-feed: #fffbf9;
+				--a: #0030a2;
+			}
+			@media (prefers-color-scheme: dark) {
+				html {
+					--bg: #071b3c;
+					color: antiquewhite;
+					--bg-feed: #0e2d48;
+					--a: #defffc;
+				}
+			}
+			html {
+				background-color: var(--bg);
+				font-family: sans-serif;
+			}
+			a {
+				color: var(--a);
+				text-decoration: none;
+			}
+			body {
+				margin: 1em 1em 1em 1em;
+				padding: 1em;
+			}
+			h2 {
+				text-align: center;
+				background-color: var(--bg-feed);
+			}
+			#container {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 3em;
+				background: var(--bg);
+				justify-content: center;
+			}
+			.feed {
+				background: var(--bg-feed);
+				padding: 0 1em 1em 1em;
+				height: fit-content;
+			}
+			#header {
+				background: var(--bg-feed);
+				margin-bottom: 3em;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="header"><h2>RSS Wall - Updated at {{.Updated}}</h2></div>
+		<div id="container">
+			{{with .Feeds}}
+			{{range .}}
+			<div class="feed">
+				<h3><a href="{{.Link}}" rel="noreferrer">{{.Title}}</a></h3>
+					{{with .Items}}
+					{{range .}}
+					<div class="item"><b>{{.Datetime}}</b>&nbsp;
+					<a href="{{.Link}}" rel="noreferrer">{{.Title}}</a></div>
+					{{end}}
+					{{end}}
+			 </div>
+				 {{end}}
+				 {{end}}
+		</div>
+	</body>
+</html>
+

@@ -1,0 +1,18 @@
+# Some news
+https://www.theguardian.com/world/rss 10
+https://rss.nytimes.com/services/xml/rss/nyt/World.xml 10
+
+# hacker news
+https://hnrss.org/newest 10
+
+# LTT (no amount of item specified, defaults to 5)
+https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw
+
+# software updates
+https://github.com/mbrubeck/agate/releases.atom 2
+https://github.com/skyjake/lagrange/releases.atom 2
+https://github.com/veracrypt/VeraCrypt/releases.atom 2
+https://humungus.tedunangst.com/r/honk/rss 2
+
+# reddit
+https://old.reddit.com/r/AskReddit/.rss 20
