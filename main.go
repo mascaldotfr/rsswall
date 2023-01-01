@@ -80,14 +80,14 @@ func main() {
 
 	linescanner := bufio.NewScanner(feedfile)
 	linescanner.Split(bufio.ScanLines)
-	
+
 	fp := gofeed.NewParser()
 	for linescanner.Scan() {
 		feedline := strings.TrimSpace(linescanner.Text())
 		if len(feedline) == 0 || strings.HasPrefix(feedline, "#") {
 			continue
 		}
-		
+
 		words := strings.Fields(feedline)
 		url := words[0]
 		maxitems := max_items
@@ -101,7 +101,7 @@ func main() {
 					max_items)
 			}
 		}
-		
+
 		feed, err := fp.ParseURL(url)
 		if err != nil {
 			log.Println(url + " => " + err.Error())
