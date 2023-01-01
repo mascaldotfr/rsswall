@@ -108,9 +108,16 @@ func main() {
 			continue
 		}
 		items := feed.Items
-		sort.SliceStable(items, func(i, j int) bool {
-			return items[i].PublishedParsed.Unix() > items[j].PublishedParsed.Unix()
-		})
+		// some feed items have no pubdate, generate one for them
+		if items[0].PublishedParsed == nil {
+			for i, _ := range items {
+				items[i].PublishedParsed = &now
+			}
+		} else {
+			sort.SliceStable(items, func(i, j int) bool {
+				return items[i].PublishedParsed.Unix() > items[j].PublishedParsed.Unix()
+			})
+		}
 
 		var parsedfeed Feed
 		parsedfeed.Title = feed.Title

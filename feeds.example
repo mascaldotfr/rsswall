@@ -1,6 +1,8 @@
 # Some news
 https://www.theguardian.com/world/rss 10
 https://rss.nytimes.com/services/xml/rss/nyt/World.xml 10
+#	test feed items without pubdate
+https://feeds.leparisien.fr/leparisien/rss
 
 # hacker news
 https://hnrss.org/newest 10
