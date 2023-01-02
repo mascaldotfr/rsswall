@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"embed"
 	"encoding/base64"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -28,6 +30,12 @@ const timeformat = "15:04"
 const mytz = "Local"
 // Generated page refresh time (in seconds)
 const refreshtime int = 10 * 60
+// Throttle each feed fetch call by sleeping x milliseconds. If you're rate
+// limited by a site where you fetch too many feeds at a time, you want to
+// increase this
+const throttle = 0 * time.Millisecond
+// TCP I/O timeout
+const tcptimeout = 5 * time.Second
 
 // configuration is ending here
 
@@ -45,6 +53,7 @@ type Feed struct {
 	Title		string
 	Items		[]Item
 	Link		string
+	Order		uint32	// Used to reorder feeds
 }
 type Item struct {
 	Datetime 	string
@@ -81,59 +90,89 @@ func main() {
 	linescanner := bufio.NewScanner(feedfile)
 	linescanner.Split(bufio.ScanLines)
 
-	fp := gofeed.NewParser()
+
+	var wg sync.WaitGroup
+	var feedorder uint32 = 0
+
 	for linescanner.Scan() {
 		feedline := strings.TrimSpace(linescanner.Text())
 		if len(feedline) == 0 || strings.HasPrefix(feedline, "#") {
 			continue
 		}
 
-		words := strings.Fields(feedline)
-		url := words[0]
-		maxitems := max_items
-		if len(words) > 1 {
-			maxitems, err = strconv.Atoi(words[1])
+		wg.Add(1)
+		feedorder++
+		time.Sleep(throttle)
+
+		go func(feedorder uint32) {
+			defer wg.Done()
+			words := strings.Fields(feedline)
+			url := words[0]
+			maxitems := max_items
+			if len(words) > 1 {
+				maxitems, err = strconv.Atoi(words[1])
+				if err != nil {
+					maxitems = max_items
+					log.Printf(`Feedline parsing failing "%s" Reason: %s.`,
+						feedline, err.Error())
+					log.Printf("Corrected, using %d as the maxitems value.",
+						max_items)
+				}
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(),
+							   tcptimeout)
+			defer cancel()
+			fp := gofeed.NewParser()
+			feed, err := fp.ParseURLWithContext(url, ctx)
 			if err != nil {
-				maxitems = max_items
-				log.Printf(`Feedline parsing failing "%s" Reason: %s.`,
-					feedline, err.Error())
-				log.Printf("Corrected, using %d as the maxitems value.",
-					max_items)
+				log.Println(url + " => " + err.Error())
+				return
 			}
-		}
+			items := feed.Items
+			if len(items) == 0 {
+				return //empty feed
+			}
+			// some feed items have no pubdate, generate one for them
+			if items[0].PublishedParsed == nil {
+				for i, _ := range items {
+					items[i].PublishedParsed = &now
+				}
+			} else {
+				sort.SliceStable(items, func(i, j int) bool {
+					if items[i].PublishedParsed == nil ||
+					   items[j].PublishedParsed == nil {
+						log.Printf("%s => %s", url,
+							   "Unable to parse pubDates, can't sort.")
+						return false
+					}
+					return items[i].PublishedParsed.Unix() > items[j].PublishedParsed.Unix()
+				})
+			}
 
-		feed, err := fp.ParseURL(url)
-		if err != nil {
-			log.Println(url + " => " + err.Error())
-			continue
-		}
-		items := feed.Items
-		// some feed items have no pubdate, generate one for them
-		if items[0].PublishedParsed == nil {
-			for i, _ := range items {
-				items[i].PublishedParsed = &now
+			var parsedfeed Feed
+			parsedfeed.Title = feed.Title
+			parsedfeed.Link = feed.Link
+			parsedfeed.Order = feedorder
+			for itemnr, item := range items {
+				var parseditem Item
+				if (itemnr >= maxitems) {
+					break
+				}
+				parseditem.Link = item.Link
+				parseditem.Datetime = item.PublishedParsed.In(tzlocation).Format(datetimeformat)
+				parseditem.Title = item.Title
+				parsedfeed.Items = append(parsedfeed.Items, parseditem)
 			}
-		} else {
-			sort.SliceStable(items, func(i, j int) bool {
-				return items[i].PublishedParsed.Unix() > items[j].PublishedParsed.Unix()
-			})
-		}
-
-		var parsedfeed Feed
-		parsedfeed.Title = feed.Title
-		parsedfeed.Link = feed.Link
-		for itemnr, item := range items {
-			var parseditem Item
-			if (itemnr >= maxitems) {
-				break
-			}
-			parseditem.Link = item.Link
-			parseditem.Datetime = item.PublishedParsed.In(tzlocation).Format(datetimeformat)
-			parseditem.Title = item.Title
-			parsedfeed.Items = append(parsedfeed.Items, parseditem)
-		}
-		rsspage.Feeds = append(rsspage.Feeds, parsedfeed)
+			rsspage.Feeds = append(rsspage.Feeds, parsedfeed)
+		}(feedorder)
 	}
+
+	wg.Wait()
+	// reorder Feeds according to the provided feedfile
+	sort.SliceStable(rsspage.Feeds, func(i, j int) bool {
+		return rsspage.Feeds[i].Order < rsspage.Feeds[j].Order
+	})
 	tmpl, err := template.ParseFS(views, "views/layout.html")
 	if err != nil {
 		panic(err)

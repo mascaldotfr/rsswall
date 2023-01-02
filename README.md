@@ -20,6 +20,7 @@ naivety fixes are welcome though.
 - Fully progressive web page, it will try to occupy most of the screen size given
   that CSS flex is supported, may it be a small smartphone or a 4K screen. It does
   also work on a text-based browser, in a more linear way indeed.
+- Fetch and parse feeds asynchronously
 - Single HTML file output.
 - No javascript or images, just text. But it has light/dark themes out of the
   box, and the page refreshes itself every 10 minutes.
@@ -28,7 +29,7 @@ naivety fixes are welcome though.
   (templates, favicon etc.) are self contained in the generated binary,
   excepted the feedlist, no dependency hell.
 
-## Quickstart and usage 
+## Quickstart and usage
 
 **rsswall** only requires `golang` *(1.19 or later, well, 1.16 should do the job
 but has not been tested)* and `make`:
