@@ -6,8 +6,13 @@ rsswall: *.go go.mod views/*
 clean:
 	rm -f rsswall
 
-test: 
+test:
 	go run . feeds.example > /dev/shm/test.html
+
+stresstest: all
+	curl -s https://raw.githubusercontent.com/simevidas/web-dev-feeds/master/feeds.opml | \
+		xml2 | awk -F= '/@xmlUrl/ {print $$2}' > /dev/shm/big_feed_list
+	./rsswall /dev/shm/big_feed_list > /dev/shm/big.html
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -17,4 +22,4 @@ install: all
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/rsswall
 
-.PHONY: all clean install uninstall
+.PHONY: all clean stresstest install uninstall
