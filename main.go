@@ -33,9 +33,9 @@ const refreshtime int = 10 * 60
 // Throttle each feed fetch call by sleeping x milliseconds. If you're rate
 // limited by a site where you fetch too many feeds at a time, you want to
 // increase this
-const throttle = 0 * time.Millisecond
+const throttle = 10 * time.Millisecond
 // TCP I/O timeout
-const tcptimeout = 5 * time.Second
+const tcptimeout = 60 * time.Second
 
 // configuration is ending here
 
@@ -159,9 +159,20 @@ func main() {
 				if (itemnr >= maxitems) {
 					break
 				}
-				parseditem.Link = item.Link
-				parseditem.Datetime = item.PublishedParsed.In(tzlocation).Format(datetimeformat)
-				parseditem.Title = item.Title
+				// Put default values to avoid nil pointer dereferences
+				parseditem.Link = "#"
+				parseditem.Datetime = now.In(tzlocation).Format(datetimeformat)
+				parseditem.Title = "Untitled Feed"
+				if item.Link != "" {
+					parseditem.Link = item.Link
+				}
+				if item.PublishedParsed != nil {
+					parseditem.Datetime =
+						item.PublishedParsed.In(tzlocation).Format(datetimeformat)
+				}
+				if item.Title != "" {
+					parseditem.Title = item.Title
+				}
 				parsedfeed.Items = append(parsedfeed.Items, parseditem)
 			}
 			rsspage.Feeds = append(rsspage.Feeds, parsedfeed)

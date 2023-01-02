@@ -105,6 +105,6 @@ USA), time and date formats, and the default number of feed items to display.
 
 ## BUGS
 
-This readme is longer than all the Go code used for this project.
+This readme is almost as long as all the Go code used for this project.
 
 More seriously, feel free to report them.
