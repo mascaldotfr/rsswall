@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"strconv"
@@ -36,6 +37,9 @@ const refreshtime int = 10 * 60
 const throttle = 10 * time.Millisecond
 // TCP I/O timeout
 const tcptimeout = 60 * time.Second
+// Filter items matching this regexp (mostly sports crappola in french)
+const filters = `(?i)(Ligue 1|Ski alpin|six nations|Football|Handball|Basketball|Tennis|Golf|F1|Moto GP|Météo|^FC)`
+
 
 // configuration is ending here
 
@@ -59,6 +63,14 @@ type Item struct {
 	Datetime 	string
 	Link		string
 	Title		string
+}
+
+func filterOut(item *gofeed.Item) bool {
+	if item.Title == "" {
+		return false
+	}
+	filter_re := regexp.MustCompile(filters)
+	return filter_re.Match([]byte(item.Title))
 }
 
 func main() {
@@ -154,11 +166,16 @@ func main() {
 			parsedfeed.Title = feed.Title
 			parsedfeed.Link = feed.Link
 			parsedfeed.Order = feedorder
-			for itemnr, item := range items {
+			itemnr := 0
+			for _, item := range items {
 				var parseditem Item
 				if (itemnr >= maxitems) {
 					break
 				}
+				if filterOut(item) {
+					continue
+				}
+				itemnr++
 				// Put default values to avoid nil pointer dereferences
 				parseditem.Link = "#"
 				parseditem.Datetime = now.In(tzlocation).Format(datetimeformat)
