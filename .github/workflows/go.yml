@@ -16,7 +16,7 @@ jobs:
       if: always()
       run: |
         sudo apt update
-        sudo apt install golang binutils
+        sudo apt install golang-1.23 binutils
         go build
         strip rsswall
         tar cvzf ${{env.TARGET}} rsswall feeds.example README.md
