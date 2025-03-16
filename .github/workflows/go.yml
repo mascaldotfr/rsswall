@@ -1,26 +1,50 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
-
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+    - main
+  workflow_dispatch:
+
+env:
+  TARGET: rsswall-latest-linux-amd64.tar.gz
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
+    - name: build
+      if: always()
+      run: |
+        sudo apt update
+        sudo apt install golang binutils
+        go build
+        strip rsswall
+        tar cvzf ${{env.TARGET}} rsswall feeds.example README.md
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        go-version: '1.20'
+        name: packages
+        path: ${{env.TARGET}}
 
-    - name: Build
-      run: go build -v ./...
+  release:
+      needs: [build]
+      permissions: write-all
+      runs-on: ubuntu-latest
 
+      steps:
+        - uses: actions/download-artifact@v4
+          with:
+            name: packages
+            path: ${{env.TARGET}}
+
+        - name: release
+          uses: marvinpinto/action-automatic-releases@latest
+          with:
+            title: Continuous build
+            automatic_release_tag: continuous
+            prerelease: false
+            draft: false
+            files: ${{env.TARGET}}
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
