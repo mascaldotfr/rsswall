@@ -31,8 +31,7 @@ naivety fixes are welcome though.
 
 ## Quickstart and usage
 
-**rsswall** only requires `golang` *(1.19 or later, well, 1.16 should do the job
-but has not been tested)* and `make`:
+**rsswall** only requires `golang` *(1.23 or later)* and `make`:
 
 ```shell
 $ git clone https://github.com/mascaldotfr/rsswall.git
